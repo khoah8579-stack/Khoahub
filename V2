@@ -1,0 +1,130 @@
+-- MENU TEST KHOA HUB (PHIÊN BẢN: TÙY CHỈNH CƯỜNG ĐỘ)
+local ScreenGui = Instance.new("ScreenGui")
+local Frame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local SkillInput = Instance.new("TextBox")  -- Ô nhập tên chiêu
+local AmountInput = Instance.new("TextBox") -- Ô nhập số lượng spam
+local FishBtn = Instance.new("TextButton")
+local SkillBtn = Instance.new("TextButton")
+local SellBtn = Instance.new("TextButton")
+local UIListLayout = Instance.new("UIListLayout")
+local ToggleBtn = Instance.new("TextButton")
+
+-- Cấu hình Giao diện Chính
+ScreenGui.Parent = game:GetService("CoreGui") 
+Frame.Name = "DevStressTest_Menu"
+Frame.Parent = ScreenGui
+Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Frame.Position = UDim2.new(0.05, 0, 0.3, 0)
+Frame.Size = UDim2.new(0, 220, 0, 360) -- Tăng thêm chiều cao
+Frame.Active = true
+Frame.Draggable = true 
+
+-- Nút Toggle Ẩn/Hiện
+ToggleBtn.Parent = ScreenGui
+ToggleBtn.Size = UDim2.new(0, 100, 0, 35)
+ToggleBtn.Position = UDim2.new(0.05, 0, 0.25, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+ToggleBtn.Text = "ẨN MENU"
+ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
+ToggleBtn.Font = Enum.Font.SourceSansBold
+ToggleBtn.TextSize = 14
+ToggleBtn.MouseButton1Click:Connect(function()
+    Frame.Visible = not Frame.Visible
+    ToggleBtn.Text = Frame.Visible and "ẨN MENU" or "HIỆN MENU"
+    ToggleBtn.BackgroundColor3 = Frame.Visible and Color3.fromRGB(200, 0, 0) or Color3.fromRGB(0, 150, 0)
+    Frame.Draggable = true 
+
+end)
+
+Title.Parent = Frame
+Title.Size = UDim2.new(1, 0, 0, 45)
+Title.Text = "khoa hub"
+Title.TextColor3 = Color3.new(255,0,0)
+Title.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+Title.TextSize = 18
+
+UIListLayout.Parent = Frame
+UIListLayout.Padding = UDim.new(0, 8)
+UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+-- Hàm tạo TextBox mẫu
+local function setupInput(box, placeholder, defaultText)
+    box.Parent = Frame
+    box.Size = UDim2.new(0.9, 0, 0, 35)
+    box.PlaceholderText = placeholder
+    box.Text = defaultText
+    box.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    box.TextColor3 = Color3.new(1, 1, 0)
+    box.Font = Enum.Font.SourceSans
+    box.TextSize = 14
+end
+
+setupInput(SkillInput, "Nhập tên chiêu...", "Thai Cuc Cuu Cung")
+setupInput(AmountInput, "Số lượng spam (Ví dụ: 30)", "30")
+AmountInput.ClearTextOnFocus = false -- Không xóa số khi bấm vào
+
+local function setupBtn(btn, text, color)
+    btn.Parent = Frame
+    btn.Size = UDim2.new(0.9, 0, 0, 45)
+    btn.Text = text
+    btn.BackgroundColor3 = color
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 14
+    btn.BorderSizePixel = 0
+end
+
+setupBtn(SkillBtn, "spam chiêu", Color3.fromRGB(120, 0, 120))
+setupBtn(FishBtn, "câu cá", Color3.fromRGB(0, 85, 127))
+setupBtn(SellBtn, "bán", Color3.fromRGB(0, 120, 0))
+
+--- LOGIC TEST ---
+
+-- 1. Logic Spam Chiêu (Lấy cả Tên và Số lượng)
+SkillBtn.MouseButton1Click:Connect(function()
+    local skillName = SkillInput.Text
+    local amount = tonumber(AmountInput.Text) -- Chuyển chữ sang số
+    
+    local char = game.Players.LocalPlayer.Character
+    local tool = char and char:FindFirstChild("C\225\186\167n C\195\162u")
+    
+    -- Kiểm tra lỗi nhập liệu
+    if not amount or amount <= 0 then
+        warn("Lỗi: Số lượng spam không hợp lệ!")
+        return
+    end
+
+    if tool and tool:FindFirstChild("Handle") and tool.Handle:FindFirstChild("Hook") then
+        print(">>> ĐANG SPAM: " .. skillName .. " [" .. amount .. " lần]")
+        
+        for i = 1, amount do
+            task.spawn(function()
+                game:GetService("ReplicatedStorage").Event.SkillEvent:FireServer(skillName, tool.Handle.Hook)
+            end)
+        end
+        warn(">>> Hoàn tất gửi " .. amount .. " yêu cầu!")
+    else
+        warn("Lỗi: Không tìm thấy vật phẩm hợp lệ!")
+    end
+end)
+
+-- 2. câu cá
+FishBtn.MouseButton1Click:Connect(function()
+    local char = game.Players.LocalPlayer.Character
+    local tool = char and char:FindFirstChild("C\225\186\167n C\195\162u")
+    if tool then
+        local args = {
+            tool:WaitForChild("Handle"),
+            tool.Fish:WaitForChild("DoneFishEvent"),
+            tool.Fish:WaitForChild("StunBackpackEvent")
+        }
+        game:GetService("ReplicatedStorage").Event.FishEvent:FireServer(unpack(args))
+    end
+end)
+
+-- 3. bán
+SellBtn.MouseButton1Click:Connect(function()
+    game:GetService("ReplicatedStorage").Event.SellFishEvent:FireServer()
+end)
